@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MACI.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2344678b1846bd4846e0df7f648fff48909d0d5e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e2eba32c9a38f57da3b6f601f4e51a15cc074b50")]
 [assembly: System.Reflection.AssemblyProductAttribute("MACI.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MACI.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
