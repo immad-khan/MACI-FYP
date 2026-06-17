@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+:root {
+  /* Color Palette */
+  --background: #0a0a0f;
+  --background-secondary: #0f0f1a;
+  --surface: #141428;
+  --border: #1e1e3a;
+  --accent: #6c63ff;
+  --accent-cyan: #00d4ff;
+  --accent-coral: #ff6b6b;
+  --success: #00ff88;
+  --text-primary: #f0f0ff;
+  --text-secondary: #8b8ba7;
+  --text-muted: #4a4a6a;
+  --warning: #ff9f43;
+  --warning-yellow: #ffc107;
+  --agent-orange: #ffb347;
+
+  /* Shadows & Glows */
+  --glow-accent: 0 0 40px rgba(108, 99, 255, 0.15);
+  --glow-accent-strong: 0 0 60px rgba(108, 99, 255, 0.3);
+  --glow-cyan: 0 0 40px rgba(0, 212, 255, 0.15);
+  --glow-success: 0 0 20px rgba(0, 255, 136, 0.2);
+  --glow-coral: 0 0 20px rgba(255, 107, 107, 0.2);
+
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-coral: var(--accent-coral);
+  --color-success: var(--success);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-warning: var(--warning);
+  --color-warning-yellow: var(--warning-yellow);
+  --color-agent-orange: var(--agent-orange);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+  --font-mono: var(--font-jetbrains);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-serif);
+  background-color: var(--background);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background-color: rgba(108, 99, 255, 0.3);
+  color: var(--text-primary);
+}
+
+/* Grain texture overlay */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7b73ff;
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(20, 20, 40, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .glass {
+    background: rgba(20, 20, 40, 0.95);
+  }
+}
+
+/* Focus rings */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Logo breathing glow */
+@keyframes breathe {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 20px rgba(108, 99, 255, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 40px rgba(108, 99, 255, 0.6));
+  }
+}
+
+.logo-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Shimmer sweep */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+/* Glossy button texture */
+.glossy-button {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 4px 14px rgba(108, 99, 255, 0.35);
+}
+
+.glossy-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.glossy-button:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 6px 20px rgba(108, 99, 255, 0.45);
+}
+
+.glossy-button:active {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Marching ants */
+@keyframes march {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 20;
+  }
+}
+
+.marching-ants {
+  animation: march 1s linear infinite;
+}
+
+/* Orb drift */
+@keyframes orbDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+}
+
+.orb-drift {
+  animation: orbDrift 20s ease-in-out infinite alternate;
+}
+
+.orb-drift-slow {
+  animation: orbDrift 25s ease-in-out infinite alternate-reverse;
+}
+
+/* Float animation */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Spin */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 1s linear infinite;
+}
+
+/* Shake */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 300ms ease;
+}
+
+/* Line draw */
+@keyframes lineDraw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.line-draw {
+  transform-origin: center;
+  animation: lineDraw 800ms ease-out forwards;
+}
+
+/* Trail dot pulse in agent pipeline */
+@keyframes pipelinePulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
