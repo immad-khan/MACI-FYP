@@ -1,0 +1,13 @@
+D:\Desktop\FYP-Project\backend\MACI.Core\bin\Debug\net10.0\MACI.Core.deps.json
+D:\Desktop\FYP-Project\backend\MACI.Core\bin\Debug\net10.0\MACI.Core.dll
+D:\Desktop\FYP-Project\backend\MACI.Core\bin\Debug\net10.0\MACI.Core.pdb
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.csproj.AssemblyReference.cache
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.AssemblyInfoInputs.cache
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.AssemblyInfo.cs
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.csproj.CoreCompileInputs.cache
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.sourcelink.json
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.dll
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\refint\MACI.Core.dll
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\MACI.Core.pdb
+D:\Desktop\FYP-Project\backend\MACI.Core\obj\Debug\net10.0\ref\MACI.Core.dll

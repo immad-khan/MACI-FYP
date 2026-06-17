@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MACI.API/MACI.API.csproj" />
+  <Project Path="MACI.Core/MACI.Core.csproj" />
+  <Project Path="MACI.Infrastructure/MACI.Infrastructure.csproj" />
+  <Project Path="MACI.Tests/MACI.Tests.csproj" />
+</Solution>
