@@ -51,3 +51,5 @@ D:\Desktop\FYP-Project\backend\MACI.API\obj\Debug\net10.0\refint\MACI.API.dll
 D:\Desktop\FYP-Project\backend\MACI.API\obj\Debug\net10.0\MACI.API.pdb
 D:\Desktop\FYP-Project\backend\MACI.API\obj\Debug\net10.0\MACI.API.genruntimeconfig.cache
 D:\Desktop\FYP-Project\backend\MACI.API\obj\Debug\net10.0\ref\MACI.API.dll
+D:\Desktop\FYP-Project\backend\MACI.api\bin\Debug\net10.0\DotNetEnv.dll
+D:\Desktop\FYP-Project\backend\MACI.api\bin\Debug\net10.0\Superpower.dll

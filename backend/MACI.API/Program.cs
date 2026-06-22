@@ -7,6 +7,14 @@ using MACI.Core.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load .env file from root of project
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), "../../.env");
+if (File.Exists(envPath))
+{
+    DotNetEnv.Env.Load(envPath);
+    builder.Configuration.AddEnvironmentVariables();
+}
+
 // Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
