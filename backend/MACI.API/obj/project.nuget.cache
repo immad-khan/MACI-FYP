@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "2+QMeLPSL6M=",
+  "dgSpecHash": "Ow7EMHON5+U=",
   "success": true,
-  "projectFilePath": "D:\\Desktop\\FYP-Project\\backend\\MACI.API\\MACI.API.csproj",
+  "projectFilePath": "D:\\Desktop\\FYP-Project\\backend\\MACI.api\\MACI.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Immad Ahmed\\.nuget\\packages\\dapper\\2.1.79\\dapper.2.1.79.nupkg.sha512",
     "C:\\Users\\Immad Ahmed\\.nuget\\packages\\microsoft.aspnetcore.cors\\2.3.11\\microsoft.aspnetcore.cors.2.3.11.nupkg.sha512",
@@ -30,9 +30,9 @@
       "code": "NU1510",
       "level": "Warning",
       "message": "PackageReference Microsoft.AspNetCore.Cors will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "projectPath": "D:\\Desktop\\FYP-Project\\backend\\MACI.API\\MACI.API.csproj",
+      "projectPath": "D:\\Desktop\\FYP-Project\\backend\\MACI.api\\MACI.API.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\Desktop\\FYP-Project\\backend\\MACI.API\\MACI.API.csproj",
+      "filePath": "D:\\Desktop\\FYP-Project\\backend\\MACI.api\\MACI.API.csproj",
       "libraryId": "Microsoft.AspNetCore.Cors",
       "targetGraphs": [
         "net10.0"

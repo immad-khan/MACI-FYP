@@ -5,5 +5,6 @@ public interface IGroqService
     Task<string> CompleteAsync(
         string systemPrompt,
         string userPrompt,
+        string apiKey,
         CancellationToken ct = default);
 }

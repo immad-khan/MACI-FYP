@@ -3,9 +3,11 @@ using System.Text.RegularExpressions;
 using MACI.Core.Agents.Interfaces;
 using MACI.Core.Enums;
 using MACI.Core.Models;
+using MACI.Core.Options;
 using MACI.Core.Prompts;
 using MACI.Core.Services.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MACI.Core.Agents;
 
@@ -14,15 +16,18 @@ public class VerifierAgent : IVerifierAgent
     private readonly ICodeExecutorService _executorService;
     private readonly IGroqService _groqService;
     private readonly ILogger<VerifierAgent> _logger;
+    private readonly string _apiKey;
 
     public VerifierAgent(
         ICodeExecutorService executorService,
         IGroqService groqService,
+        IOptions<GroqOptions> options,
         ILogger<VerifierAgent> logger)
     {
         _executorService = executorService;
         _groqService = groqService;
         _logger = logger;
+        _apiKey = options.Value.VerifierAgentApiKey;
     }
 
     public async Task<BugReport> VerifyAsync(
@@ -44,7 +49,7 @@ public class VerifierAgent : IVerifierAgent
 
         // Step 1: Execute the code
         ExecutionResult executionResult;
-        
+
         if (testCases.Any())
         {
             executionResult = await _executorService.ExecuteWithTestCasesAsync(
@@ -79,9 +84,7 @@ public class VerifierAgent : IVerifierAgent
             await ClassifyBugAsync(candidate.Code, executionResult, bugReport, ct);
         }
 
-        // Step 3: Run static analysis (Semgrep simulation)
-        // Note: Real Semgrep integration would go in MACI.Infrastructure
-        // For now, we'll do basic pattern matching
+        // Step 3: Run basic static analysis
         bugReport.SemgrepFindings = RunBasicStaticAnalysis(candidate.Code);
 
         if (bugReport.SemgrepFindings.Any())
@@ -115,7 +118,7 @@ public class VerifierAgent : IVerifierAgent
     {
         _logger.LogInformation("Classifying bug using LLM...");
 
-        // First, try rule-based classification (fast)
+        // First try rule-based (fast)
         if (TryRuleBasedClassification(executionResult, bugReport))
         {
             _logger.LogInformation(
@@ -125,7 +128,7 @@ public class VerifierAgent : IVerifierAgent
             return;
         }
 
-        // Fall back to LLM-based classification (more accurate for complex cases)
+        // Fall back to LLM classification
         try
         {
             var classificationPrompt = VerifierAgentPrompts.BuildClassificationPrompt(
@@ -138,6 +141,7 @@ public class VerifierAgent : IVerifierAgent
             var response = await _groqService.CompleteAsync(
                 VerifierAgentPrompts.BugClassificationPrompt,
                 classificationPrompt,
+                _apiKey,
                 ct);
 
             var jsonContent = ExtractJson(response);
@@ -161,7 +165,6 @@ public class VerifierAgent : IVerifierAgent
         catch (Exception ex)
         {
             _logger.LogError(ex, "LLM classification failed, using fallback");
-            // Fallback to generic classification
             bugReport.PrimaryType = BugPrimaryType.Runtime;
             bugReport.SecondaryType = BugSecondaryType.UndefinedVariable;
             bugReport.BugDescription = "Classification failed: " + ex.Message;
@@ -174,7 +177,6 @@ public class VerifierAgent : IVerifierAgent
     {
         var stderr = executionResult.Stderr.ToLower();
 
-        // Timeout
         if (executionResult.TimedOut)
         {
             bugReport.PrimaryType = BugPrimaryType.Runtime;
@@ -184,22 +186,17 @@ public class VerifierAgent : IVerifierAgent
             return true;
         }
 
-        // Syntax errors
         if (stderr.Contains("syntaxerror"))
         {
             bugReport.PrimaryType = BugPrimaryType.Syntax;
-            
-            if (stderr.Contains("expected ':'") || stderr.Contains("invalid syntax"))
-                bugReport.SecondaryType = BugSecondaryType.MissingColon;
-            else
-                bugReport.SecondaryType = BugSecondaryType.IndentationError;
-
+            bugReport.SecondaryType = stderr.Contains("expected ':'") || stderr.Contains("invalid syntax")
+                ? BugSecondaryType.MissingColon
+                : BugSecondaryType.IndentationError;
             bugReport.BugDescription = "Python syntax error detected";
             bugReport.BugLocation = ExtractLineNumber(stderr);
             return true;
         }
 
-        // Indentation
         if (stderr.Contains("indentationerror"))
         {
             bugReport.PrimaryType = BugPrimaryType.Syntax;
@@ -209,7 +206,6 @@ public class VerifierAgent : IVerifierAgent
             return true;
         }
 
-        // Runtime errors
         if (stderr.Contains("nameerror") || stderr.Contains("not defined"))
         {
             bugReport.PrimaryType = BugPrimaryType.Runtime;
@@ -246,7 +242,6 @@ public class VerifierAgent : IVerifierAgent
             return true;
         }
 
-        // Functional bugs (wrong output)
         if (stderr.Contains("expected:") || stderr.Contains("actual:"))
         {
             bugReport.PrimaryType = BugPrimaryType.Functional;
@@ -263,7 +258,6 @@ public class VerifierAgent : IVerifierAgent
     {
         var findings = new List<StaticAnalysisFinding>();
 
-        // Check for dangerous functions
         if (code.Contains("eval(") || code.Contains("exec("))
         {
             findings.Add(new StaticAnalysisFinding
@@ -276,7 +270,6 @@ public class VerifierAgent : IVerifierAgent
             });
         }
 
-        // Check for TODO/FIXME comments
         if (Regex.IsMatch(code, @"#\s*(TODO|FIXME)", RegexOptions.IgnoreCase))
         {
             findings.Add(new StaticAnalysisFinding
@@ -289,7 +282,6 @@ public class VerifierAgent : IVerifierAgent
             });
         }
 
-        // Check for pass statements (incomplete implementation)
         if (Regex.IsMatch(code, @"^\s*pass\s*$", RegexOptions.Multiline))
         {
             findings.Add(new StaticAnalysisFinding
@@ -314,15 +306,9 @@ public class VerifierAgent : IVerifierAgent
     private static string ExtractJson(string response)
     {
         var json = response.Trim();
-        
-        if (json.StartsWith("```json"))
-            json = json[7..];
-        else if (json.StartsWith("```"))
-            json = json[3..];
-        
-        if (json.EndsWith("```"))
-            json = json[..^3];
-
+        if (json.StartsWith("```json")) json = json[7..];
+        else if (json.StartsWith("```")) json = json[3..];
+        if (json.EndsWith("```")) json = json[..^3];
         return json.Trim();
     }
 

@@ -22,18 +22,21 @@ public class GroqService : IGroqService
         _httpClient = httpClient;
         _options = options.Value;
         _logger = logger;
-        
+
         _httpClient.BaseAddress = new Uri(_options.BaseUrl);
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _options.ApiKey);
     }
 
     public async Task<string> CompleteAsync(
         string systemPrompt,
         string userPrompt,
+        string apiKey,
         CancellationToken ct = default)
     {
-        var request = new
+        // Each call uses its own API key
+        var request = new HttpRequestMessage(HttpMethod.Post, "/chat/completions");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        var body = new
         {
             model = _options.Model,
             messages = new[]
@@ -45,21 +48,21 @@ public class GroqService : IGroqService
             max_tokens = _options.MaxTokens
         };
 
-        var json = JsonSerializer.Serialize(request);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var json = JsonSerializer.Serialize(body);
+        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
         _logger.LogInformation("Sending request to Groq API");
-        
-        var response = await _httpClient.PostAsync("/chat/completions", content, ct);
+
+        var response = await _httpClient.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
 
         var responseBody = await response.Content.ReadAsStringAsync(ct);
         var result = JsonSerializer.Deserialize<GroqResponse>(responseBody);
 
         var completion = result?.Choices?.FirstOrDefault()?.Message?.Content ?? string.Empty;
-        
+
         _logger.LogInformation("Received {Length} characters from Groq", completion.Length);
-        
+
         return completion;
     }
 
