@@ -69,10 +69,11 @@ export default function ChatPage() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    const userInput = input.trim();
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: userInput,
       timestamp: new Date(),
     };
 
@@ -80,17 +81,127 @@ export default function ChatPage() {
     setInput("");
     setIsTyping(true);
 
-    // Simulate agent response
-    setTimeout(() => {
+    try {
+      const response = await fetch("http://localhost:5000/api/Test/pipeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "Chat Request",
+          description: userInput,
+          testCases: []
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to get response from MACI pipeline";
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) {
+            errorMessage = errData.error;
+          }
+        } catch (e) {
+          // Ignore parsing error if response isn't JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+
+      // ═══════════════════════════════════════════════════════
+      // 📋 FULL PIPELINE CONSOLE LOGGING
+      // ═══════════════════════════════════════════════════════
+      console.group(`%c🚀 MACI Pipeline Response (${data.mode?.toUpperCase()} mode) — ${data.durationMs}ms`, "color: #6c63ff; font-size: 14px; font-weight: bold;");
+      
+      // Master Agent
+      console.group("%c👑 MASTER AGENT", "color: #ffd700; font-size: 13px; font-weight: bold;");
+      console.log("%cClassification:", "font-weight: bold;", data.masterAgentOutput?.classification);
+      console.log("%cRaw LLM Response:", "font-weight: bold;", data.masterAgentOutput?.rawLlmResponse);
+      if (data.mode === "chat") {
+        console.log("%cChat Response:", "font-weight: bold; color: #4caf50;", data.masterAgentOutput?.chatResponse);
+      } else {
+        console.log("%cFunction Name:", "font-weight: bold;", data.masterAgentOutput?.functionName);
+        console.log("%cFunction Signature:", "font-weight: bold;", data.masterAgentOutput?.functionSignature);
+        console.log("%cProblem Summary:", "font-weight: bold;", data.masterAgentOutput?.problemSummary);
+        console.log("%cParameters:", "font-weight: bold;", data.masterAgentOutput?.parameters);
+        console.log("%cConstraints:", "font-weight: bold;", data.masterAgentOutput?.constraints);
+        console.log("%cEdge Cases:", "font-weight: bold;", data.masterAgentOutput?.edgeCases);
+        console.log("%cExamples:", "font-weight: bold;", data.masterAgentOutput?.examples);
+      }
+      console.groupEnd();
+
+      // Writer Agent (only in code mode)
+      if (data.writerAgentOutput) {
+        console.group("%c✍️ WRITER AGENT", "color: #2196f3; font-size: 13px; font-weight: bold;");
+        console.log("%cTechnique:", "font-weight: bold;", data.writerAgentOutput.technique);
+        console.log("%cGenerated Code:", "font-weight: bold; color: #4caf50;", "\n" + data.writerAgentOutput.generatedCode);
+        console.log("%cChain-of-Thought Trace:", "font-weight: bold;", data.writerAgentOutput.cotTrace);
+        console.groupEnd();
+      }
+
+      // Verifier Agent (only in code mode)
+      if (data.verifierAgentOutput) {
+        console.group("%c🔍 VERIFIER AGENT", "color: #ff5722; font-size: 13px; font-weight: bold;");
+        console.log("%cIs Clean:", "font-weight: bold;", data.verifierAgentOutput.isClean ? "✅ YES" : "❌ NO");
+        console.log("%cHas Bugs:", "font-weight: bold;", data.verifierAgentOutput.hasBugs);
+        console.log("%cExecution Passed:", "font-weight: bold;", data.verifierAgentOutput.executionPassed);
+        if (data.verifierAgentOutput.primaryBugType) {
+          console.log("%cBug Type:", "font-weight: bold; color: red;", `${data.verifierAgentOutput.primaryBugType} / ${data.verifierAgentOutput.secondaryBugType}`);
+          console.log("%cBug Description:", "font-weight: bold;", data.verifierAgentOutput.bugDescription);
+          console.log("%cBug Location:", "font-weight: bold;", data.verifierAgentOutput.bugLocation);
+        }
+        console.log("%cStdout:", "font-weight: bold;", data.verifierAgentOutput.stdout);
+        console.log("%cStderr:", "font-weight: bold;", data.verifierAgentOutput.stderr);
+        console.log("%cExit Code:", "font-weight: bold;", data.verifierAgentOutput.exitCode);
+        console.log("%cExecution Time:", "font-weight: bold;", `${data.verifierAgentOutput.executionTimeMs}ms`);
+        console.log("%cStatic Analysis:", "font-weight: bold;", data.verifierAgentOutput.staticAnalysisFindings);
+        console.groupEnd();
+      }
+
+      console.log("%c📊 Full Response Object:", "font-weight: bold; color: #9c27b0;", data);
+      console.groupEnd();
+
+      // ═══════════════════════════════════════════════════════
+      // Build the chat bubble content
+      // ═══════════════════════════════════════════════════════
+      let responseContent = "";
+
+      if (data.mode === "chat") {
+        // Chat mode — just show the Master Agent's direct response
+        responseContent = data.masterAgentOutput?.chatResponse || "I'm MACI! Give me a coding problem to solve.";
+      } else {
+        // Code mode — show the full pipeline output
+        responseContent = `**Problem Summary:** ${data.masterAgentOutput?.problemSummary || "N/A"}\n\n`;
+        
+        if (data.writerAgentOutput?.generatedCode) {
+          responseContent += `**Generated Code:**\n\`\`\`python\n${data.writerAgentOutput.generatedCode}\n\`\`\`\n\n`;
+        }
+        
+        const isClean = data.verifierAgentOutput?.isClean;
+        responseContent += `**Verification:** ${isClean ? "✅ Passed all checks" : "⚠️ Bugs detected"}`;
+        if (!isClean && data.verifierAgentOutput?.primaryBugType) {
+           responseContent += ` (${data.verifierAgentOutput.primaryBugType})`;
+        }
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `I'm analyzing your request with the ${selectedAgent} agent. The team will collaboratively generate, verify, and optimize the solution for you.`,
+        content: responseContent,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error: any) {
+      console.error("❌ MACI Pipeline Error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `Error: ${error.message || "Something went wrong communicating with the backend."}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -281,7 +392,7 @@ export default function ChatPage() {
                   <div
                     className={`max-w-[85%] rounded-[16px] px-4 py-3 sm:max-w-[75%] ${message.role === "user" ? "bg-[#6c63ff] text-white" : "border border-[#1e1e3a] bg-[#141428] text-[#f0f0ff]"}`}
                   >
-                    <p className="text-[14px] leading-relaxed">{message.content}</p>
+                    <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{message.content}</p>
                     <p className="mt-1 text-[10px] opacity-60">
                       {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>
